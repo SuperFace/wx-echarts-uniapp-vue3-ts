@@ -24,6 +24,7 @@
         width: width,
         height: height
       });
+
       canvas.setChart(chart);
       
       const option20: echarts.EChartsCoreOption = {

@@ -111,7 +111,7 @@ export default defineComponent({
     const initByNewWay = () => {
       // version >= 2.9.0：使用新的方式初始化
       const { canvasId } = props;
-      const query = wx.createSelectorQuery().in(instance);
+      const query = wx.createSelectorQuery().in(instance as any);
 
       query
         .select(`#${canvasId}`)
@@ -142,13 +142,13 @@ export default defineComponent({
     const initByOldWay = () => {
       // 1.9.91 <= version < 2.9.0：原来的方式初始化
       const { canvasId } = props;
-      ctx.value = wx.createCanvasContext(canvasId, instance);
+      ctx.value = wx.createCanvasContext(canvasId, instance as any);
 
       const _canvas = new WxCanvas(ctx.value, canvasId);
 
       const canvasDpr = 1;
 
-      const query = wx.createSelectorQuery().in(instance);
+      const query = wx.createSelectorQuery().in(instance as any);
       query.select(`#${canvasId}`).boundingClientRect((res) => {
         if (!res) {
           setTimeout(() => init(), 50);
@@ -171,7 +171,7 @@ export default defineComponent({
       const { canvasId } = props;
       if (isUseNewCanvas.value) {
         // 新版
-        const query = wx.createSelectorQuery().in(instance);
+        const query = wx.createSelectorQuery().in(instance as any);
         query
           .select(`#${canvasId}`)
           .fields({ node: true, size: true })
@@ -219,6 +219,7 @@ export default defineComponent({
     };
 
     const touchMove = (e: any) => {
+      console.log('------', e);
       const {
         disableTouch, throttleTouch
       } = props;
@@ -245,13 +246,14 @@ export default defineComponent({
     };
 
     const touchEnd = (e: any) => {
+      console.log('------', e);
       const { disableTouch } = props;
       if (!canvas.value || disableTouch || !canvas.value.chart) return;
       const chart = canvas.value.chart;
 
       const changedTouches = e.changedTouches || e.mp.changedTouches;
       e.mp = e;
-
+      
       const touch = changedTouches ? changedTouches[0] : {};
       const { handler } = chart._zr;
       handler.dispatch('mouseup', Object.assign({
@@ -262,6 +264,13 @@ export default defineComponent({
         zrX: touch.x,
         zrY: touch.y,
       }, e));
+      chart.dispatchAction({
+        type: 'hideTip' //隐藏tooltip
+      });
+      chart.dispatchAction({
+        type: 'updateAxisPointer',
+        currTrigger: 'leave' //隐藏竖线指示器
+      });
       const processGesture = handler.proxy.processGesture || (() => {});
       processGesture(wrapTouch(e), 'end');
     };
